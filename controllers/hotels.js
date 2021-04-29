@@ -8,17 +8,42 @@ const Hotel = require('../model/Hotel');
 // GET     /api/v1/hotels
 // Public
 exports.getHotels = asyncHandler(async (req, res, next) => {
-
         let query;
 
-        let queryStr = JSON.stringify(req.query)
+        // copy req.query
+        const reqQuery = { ...req.query }
+
+        // Fields to exclude
+        const removeFields = ['select', 'sort'];
+
+        // Loop over removeFields and delete time from reqQuery
+        removeFields.forEach(params => delete reqQuery[params])
+
+        // Create query string
+        let queryStr = JSON.stringify(reqQuery)
 
         // Change the query into object string
         queryStr = queryStr.replace(/\b(gt|gte}lt|lte|in)\b/g, match =>  `$${match}`);
 
+        // Find resourse
         query = Hotel.find(JSON.parse(queryStr))
+
+        // select fields
+        if(req.query.select) {
+            const fields = req.query.select.split(',').join(' ');
+            query = query.select(fields);
+        }
+
+        // sort
+        if(req.query.sort) {
+            const sortBy = req.query.sort.split(',').join(' ');
+            query = query.sort(sortBy)
+        } else {
+            query = query.sort('-createdAt')
+        }
         const hotel = await query;
         res.status(200).json({ success : true, data : hotel })
+
 });
 
 // desc    Add Hotels
@@ -84,7 +109,7 @@ exports.deleteHotel = async (req,res,next) => {
 exports.getHotelInRadius = asyncHandler(async (req, res, next) => {
     const { zipcode, distance } = req.params  
 
-    //get lat/lng from geocoder
+    // get lat/lng from geocoder
     const loc = await geocoder.geocode(zipcode);
     const lat = loc[0].latitude;
     const lng = loc[0].longitude
