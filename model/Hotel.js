@@ -102,15 +102,11 @@ HotelSchema.pre('save', async function(next) {
     state : loc[0].stateCode,
     zipcode : loc[0].zipcode,
     country : loc[0].countryCode
-
   }
 
   // do not save address field
   this.address = undefined
-
   next();
 })
-
-
 
 module.exports = mongoose.model("Hotel", HotelSchema);
