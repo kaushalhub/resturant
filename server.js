@@ -24,10 +24,12 @@ app.use(bodyParser.json())
 
 // Import Routes
 const hotels = require('./routes/hotel');
+const product = require("./routes/product");
 
 
 // Use Routes
 app.use('/api/v1/hotels', hotels)
+app.use("/api/v1/products", product);
 
 app.use(errorHandler);
 

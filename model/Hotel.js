@@ -80,8 +80,10 @@ const HotelSchema = new mongoose.Schema({
     type : Date,
     default : Date.now()
   }
+}, {
+  toJSON : { virtuals : true },
+  toObject : { virtuals : true }
 });
-
 
 // Create Hotel slug from the name
 HotelSchema.pre('save', function(next) {
@@ -107,6 +109,21 @@ HotelSchema.pre('save', async function(next) {
   // do not save address field
   this.address = undefined
   next();
+})
+
+
+// Cascade delete product when a hotel is deleted
+HotelSchema.pre('remove', async function (next) {
+  await this.model('product').deleteMany({ hotel : this._id })
+  next();
+})
+
+// Resverse populate with virtuals
+HotelSchema.virtual('product', {
+  ref : 'Product',
+  localField : '_id',
+  foreignField : 'hotel',
+  justOne : false
 })
 
 module.exports = mongoose.model("Hotel", HotelSchema);

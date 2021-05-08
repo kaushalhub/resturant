@@ -26,7 +26,7 @@ exports.getHotels = asyncHandler(async (req, res, next) => {
         queryStr = queryStr.replace(/\b(gt|gte}lt|lte|in)\b/g, match =>  `$${match}`);
 
         // Find resourse
-        query = Hotel.find(JSON.parse(queryStr))
+        query = Hotel.find(JSON.parse(queryStr)).populate('product');
 
         // select fields
         if(req.query.select) {
@@ -121,15 +121,20 @@ exports.updateHotel = async (req,res,next) => {
 // desc    Delete Hotel
 // DELETE     /api/v1/hotels
 // Private
-exports.deleteHotel = async (req,res,next) => {
-    try {
-        const hotel = await Hotel.findByIdAndRemove(req.params.id)
+exports.deleteHotel =asyncHandler(async (req,res,next) => {
+    
+        const hotel = await Hotel.findById(req.params.id)
+
+        if(!hotel) {
+            return next(new ErrorResponse(`Hotel not found with this id ${req. params.id}`)
+            )
+        }
+
+        hotel.remove
 
         res.status(200).json({ success : true, data : hotel })
-    } catch (err) {
-        next(err)
-    }
-}
+
+});
 
 // desc    Near By Hotel
 // DELETE     /api/v1/hotels/radius/:zipcode/:distance
